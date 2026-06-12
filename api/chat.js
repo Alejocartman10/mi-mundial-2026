@@ -13,7 +13,8 @@ export default async function handler(req, res) {
       }
     );
     const fixturesData = await fixturesRes.json();
-   footballContext = JSON.stringify(fixturesData.response?.slice(0, 3));
+   const raw = JSON.stringify(fixturesData).slice(0, 2000);
+footballContext = `RESPUESTA CRUDA API-FOOTBALL: ${raw}`;
   } catch (e) {
    footballContext = `ERROR API-Football: ${e.message}`;  }
 
