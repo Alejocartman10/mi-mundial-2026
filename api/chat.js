@@ -15,8 +15,7 @@ export default async function handler(req, res) {
     const fixturesData = await fixturesRes.json();
    footballContext = JSON.stringify(fixturesData.response?.slice(0, 3));
   } catch (e) {
-    footballContext = 'No se pudieron cargar los partidos en este momento.';
-  }
+   footballContext = `ERROR API-Football: ${e.message}`;  }
 
   // 2. Inyectar datos reales en el system prompt
   const systemWithData = `${req.body.system}
