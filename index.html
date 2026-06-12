@@ -427,6 +427,7 @@
     </div>
 
     <div class="section-label">En vivo ahora</div>
+    <div id="partidos-hoy"></div>
     <div class="match-card live">
       <div class="match-header">
         <span class="match-group">Grupo B · Jornada 2</span>
@@ -526,7 +527,7 @@
 
     <div class="section-label">Pendientes · Cierran en 3h</div>
 
-    <div class="pred-card" id="pc1">
+    <div class="pred-card" id="predecir-hoy">
       <div class="pc-header"><span>Grupo H · Hoy 18:00</span><span style="color:var(--red)">Sin predecir</span></div>
       <div class="pc-teams">
         <div class="pc-team"><span class="pc-flag">🇫🇷</span><span class="pc-name">Francia</span></div>
@@ -919,6 +920,84 @@ function addTyping() {
 document.getElementById('chatInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') sendMsg();
 });
+  // ─── DATOS EN VIVO DEL MUNDIAL ───
+async function cargarDatosEnVivo() {
+  try {
+    const r = await fetch('https://worldcup26.ir/get/games');
+    const data = await r.json();
+    const games = data.games || [];
+    const hoy = new Date().toISOString().slice(0, 10);
+
+    // Formatear fecha de la API (MM/DD/YYYY → YYYY-MM-DD)
+    const parsearFecha = (local_date) => {
+      const [datePart] = local_date.split(' ');
+      const [mm, dd, yyyy] = datePart.split('/');
+      return `${yyyy}-${mm}-${dd}`;
+    };
+
+    const partidos = games.map(g => ({
+      ...g,
+      fechaISO: parsearFecha(g.local_date),
+      hora: g.local_date.split(' ')[1]
+    }));
+
+    const hoyPartidos = partidos.filter(g => g.fechaISO === hoy);
+    const terminados = partidos.filter(g => g.finished === 'TRUE');
+    const enVivo = partidos.filter(g => g.finished === 'FALSE' && g.time_elapsed !== 'notstarted');
+
+    actualizarInicio(hoyPartidos, terminados, enVivo);
+    actualizarPredecir(hoyPartidos);
+
+  } catch (e) {
+    console.error('Error cargando datos en vivo:', e);
+  }
+}
+
+function actualizarInicio(hoy, terminados, enVivo) {
+  const contenedor = document.getElementById('partidos-hoy');
+  if (!contenedor) return;
+  contenedor.innerHTML = '';
+
+  const todos = [...enVivo, ...hoy.filter(g => g.time_elapsed === 'notstarted')];
+  if (todos.length === 0) {
+    contenedor.innerHTML = '<div style="padding:16px;color:var(--text-dim);font-size:13px">No hay partidos programados para hoy.</div>';
+    return;
+  }
+
+  todos.forEach(g => {
+    const isLive = g.time_elapsed !== 'notstarted' && g.finished === 'FALSE';
+    const card = document.createElement('div');
+    card.className = 'match-card' + (isLive ? ' live' : '');
+    card.innerHTML = `
+      <div class="match-header">
+        <span class="match-group">Grupo ${g.group} · Jornada ${g.matchday}</span>
+        ${isLive ? '<span class="live-badge"><span class="live-dot"></span>EN VIVO</span>' : `<span class="pill-up">${g.hora}</span>`}
+      </div>
+      <div class="match-body">
+        <div class="team"><div class="team-flag" style="font-size:28px">${g.home_team_name_en}</div></div>
+        <div class="score-center">
+          <div class="score-digits ${isLive ? 'live-score' : ''}" style="${!isLive ? 'font-size:26px;color:var(--text-dim);letter-spacing:2px' : ''}">${isLive || g.finished === 'TRUE' ? g.home_score + '·' + g.away_score : 'vs'}</div>
+        </div>
+        <div class="team"><div class="team-flag" style="font-size:28px">${g.away_team_name_en}</div></div>
+      </div>`;
+    contenedor.appendChild(card);
+  });
+}
+
+function actualizarPredecir(hoy) {
+  const contenedor = document.getElementById('predecir-hoy');
+  if (!contenedor) return;
+  const pendientes = hoy.filter(g => g.finished === 'FALSE' && g.time_elapsed === 'notstarted');
+  if (pendientes.length === 0) return;
+
+  const label = contenedor.previousElementSibling;
+  if (label) label.textContent = `Pendientes · ${pendientes.length} partido${pendientes.length > 1 ? 's' : ''} hoy`;
+}
+
+// Llamar al cargar
+cargarDatosEnVivo();
+// Refrescar cada 60 segundos
+setInterval(cargarDatosEnVivo, 60000);
 </script>
 </body>
 </html>
