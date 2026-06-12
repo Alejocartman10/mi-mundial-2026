@@ -13,11 +13,13 @@ export default async function handler(req, res) {
     const live = games.filter(g => g.finished === 'FALSE' && g.time_elapsed !== 'notstarted');
 
     const formatGame = g => {
-      const scorers = g.home_scorers && g.home_scorers !== 'null' 
-        ? ` (${g.home_scorers} / ${g.away_scorers})` : '';
-      return `${g.local_date} | Grupo ${g.group} | ${g.home_team_name_en} ${g.home_score}-${g.away_score} ${g.away_team_name_en}${scorers} | ${g.time_elapsed}`;
-    };
-
+  const scorers = g.home_scorers && g.home_scorers !== 'null'
+    ? ` (${g.home_scorers} / ${g.away_scorers})` : '';
+  const [datePart, timePart] = g.local_date.split(' ');
+  const [mm, dd, yyyy] = datePart.split('/');
+  const fecha = `${dd}/${mm}/${yyyy} ${timePart}`;
+  return `${fecha} | Grupo ${g.group} | ${g.home_team_name_en} ${g.home_score}-${g.away_score} ${g.away_team_name_en}${scorers} | ${g.time_elapsed}`;
+};
     footballContext = [
       live.length ? `EN VIVO:\n${live.map(formatGame).join('\n')}` : '',
       finished.length ? `RESULTADOS:\n${finished.map(formatGame).join('\n')}` : '',
