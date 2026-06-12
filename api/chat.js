@@ -13,18 +13,7 @@ export default async function handler(req, res) {
       }
     );
     const fixturesData = await fixturesRes.json();
-    const fixtures = fixturesData.response || [];
-
-    footballContext = fixtures.map(f => {
-      const home = f.teams.home.name;
-      const away = f.teams.away.name;
-      const date = new Date(f.fixture.date).toLocaleString('es-CO', { timeZone: 'America/Bogota' });
-      const status = f.fixture.status.long;
-      const homeGoals = f.goals.home ?? '-';
-      const awayGoals = f.goals.away ?? '-';
-      return `${date} | ${home} ${homeGoals}-${awayGoals} ${away} | ${status}`;
-    }).join('\n');
-
+   footballContext = JSON.stringify(fixturesData.response?.slice(0, 3));
   } catch (e) {
     footballContext = 'No se pudieron cargar los partidos en este momento.';
   }
