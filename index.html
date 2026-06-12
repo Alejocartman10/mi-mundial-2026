@@ -976,7 +976,7 @@ function actualizarInicio(hoy, terminados, enVivo) {
       card.innerHTML = `
   <div class="match-header">
     <span class="match-group">Grupo ${g.group} · Jornada ${g.matchday}</span>
-    ${isLive ? '<span class="live-badge"><span class="live-dot"></span>EN VIVO</span>' : `<span class="pill-up">${g.hora}</span>`}
+    ${isLive ? '<span class="live-badge"><span class="live-dot"></span>EN VIVO</span>' : '<span class="pill-up">' + g.hora + '</span>'}
   </div>
   <div class="match-body">
     <div class="team">
