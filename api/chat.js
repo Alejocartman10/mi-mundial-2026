@@ -1,30 +1,39 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  // 1. Consultar partidos del Mundial a API-Football
   let footballContext = '';
   try {
-    const fixturesRes = await fetch(
-      'https://v3.football.api-sports.io/fixtures?league=1&season=2026&from=2026-06-11&to=2026-06-14',
-      {
-        headers: {
-          'x-apisports-key': process.env.API_FOOTBALL_KEY
+    const r = await fetch(
+      'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json'
+    );
+    const data = await r.json();
+
+    // Partidos de hoy y recientes
+    const today = new Date().toISOString().slice(0, 10);
+    const matches = [];
+
+    for (const round of data.rounds || []) {
+      for (const match of round.matches || []) {
+        const matchDate = match.date?.slice(0, 10);
+        if (matchDate >= today.slice(0, 7)) {
+          matches.push(
+            `${match.date} | ${match.team1?.name} ${match.score1 ?? '?'}-${match.score2 ?? '?'} ${match.team2?.name}`
+          );
         }
       }
-    );
-    const fixturesData = await fixturesRes.json();
-   const raw = JSON.stringify(fixturesData).slice(0, 2000);
-footballContext = `RESPUESTA CRUDA API-FOOTBALL: ${raw}`;
-  } catch (e) {
-   footballContext = `ERROR API-Football: ${e.message}`;  }
+    }
 
-  // 2. Inyectar datos reales en el system prompt
+    footballContext = matches.slice(0, 20).join('\n') || 'Sin partidos próximos disponibles.';
+
+  } catch (e) {
+    footballContext = `Error cargando datos: ${e.message}`;
+  }
+
   const systemWithData = `${req.body.system}
 
-DATOS EN VIVO DE API-FOOTBALL (próximos y recientes partidos del Mundial 2026):
+DATOS REALES DEL MUNDIAL 2026 (fuente oficial):
 ${footballContext}`;
 
-  // 3. Llamar a Claude con el contexto actualizado
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
