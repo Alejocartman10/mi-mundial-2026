@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const data = await r.json();
     const games = Array.isArray(data) ? data : (data.games || data.matches || []);
     
-    footballContext = games.slice(0, 30).map(m => 
+    footballContext = JSON.stringify(games[0]);
       `${m.date || m.time || ''} | ${m.home_team || m.team1 || ''} ${m.home_score ?? '?'}-${m.away_score ?? '?'} ${m.away_team || m.team2 || ''} | ${m.status || m.state || ''}`
     ).join('\n') || 'Sin datos disponibles.';
 
