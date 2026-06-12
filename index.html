@@ -968,28 +968,9 @@ function actualizarInicio(hoy, terminados, enVivo) {
     const isLive = g.time_elapsed !== 'notstarted' && g.finished === 'FALSE';
     const card = document.createElement('div');
     card.className = 'match-card' + (isLive ? ' live' : '');
-    card.innerHTML = `
-      <div class="match-header">
-        <span class="match-group">Grupo ${g.group} · Jornada ${g.matchday}</span>
-        ${isLive ? '<span class="live-badge"><span class="live-dot"></span>EN VIVO</span>' : `<span class="pill-up">${g.hora}</span>`}
-      </div>
-      card.innerHTML = `
-  <div class="match-header">
-    <span class="match-group">Grupo ${g.group} · Jornada ${g.matchday}</span>
-    ${isLive ? '<span class="live-badge"><span class="live-dot"></span>EN VIVO</span>' : '<span class="pill-up">' + g.hora + '</span>'}
-  </div>
-  <div class="match-body">
-    <div class="team">
-      <div class="team-name">${g.home_team_name_en}</div>
-    </div>
-    <div class="score-center">
-      <div class="score-digits ${isLive ? 'live-score' : ''}" style="${!isLive ? 'font-size:26px;color:var(--text-dim);letter-spacing:2px' : ''}">${isLive || g.finished === 'TRUE' ? g.home_score + '·' + g.away_score : 'vs'}</div>
-      ${g.hora ? `<div class="score-time">${g.hora}</div>` : ''}
-    </div>
-    <div class="team">
-      <div class="team-name">${g.away_team_name_en}</div>
-    </div>
-  </div>`;
+        const header = '<div class="match-header"><span class="match-group">Grupo ' + g.group + ' · Jornada ' + g.matchday + '</span>' + (isLive ? '<span class="live-badge"><span class="live-dot"></span>EN VIVO</span>' : '<span class="pill-up">' + g.hora + '</span>') + '</div>';
+    const body = '<div class="match-body"><div class="team"><div class="team-name">' + g.home_team_name_en + '</div></div><div class="score-center"><div class="score-digits' + (isLive ? ' live-score' : '') + '">' + (isLive || g.finished === 'TRUE' ? g.home_score + '·' + g.away_score : 'vs') + '</div></div><div class="team"><div class="team-name">' + g.away_team_name_en + '</div></div></div>';
+    card.innerHTML = header + body;
     contenedor.appendChild(card);
   });
 }
