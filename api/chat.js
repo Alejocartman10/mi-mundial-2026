@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   let footballContext = '';
   try {
     const fixturesRes = await fetch(
-      'https://v3.football.api-sports.io/leagues?current=true',
+      'https://v3.football.api-sports.io/leagues?id=1',
       {
         headers: {
           'x-apisports-key': process.env.API_FOOTBALL_KEY
